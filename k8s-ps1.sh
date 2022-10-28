@@ -29,13 +29,14 @@
 #
 
 __k8s_parse () {
-    KUBECONFIG="${KUBECONFIG:-~/.kube/config}"
+    KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
     CACHEFILE=~/.cache/k8s-ps1/"${KUBECONFIG//\//_}"
     [[ "$KUBECONFIG" -ot "$CACHEFILE" ]] && return
     [[ ! -d ~/.cache/k8s-ps1/ ]] && mkdir -p ~/.cache/k8s-ps1
     __K8S_CTX="$(kubectl config current-context)"
     __K8S_NS="$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${__K8S_CTX}\")].context.namespace}")"
-    echo -e "__K8S_CTX=$__K8S_CTX\n__K8S_NS=${__K8S_NS:-default}\n" > "$CACHEFILE"
+    __K8S_CLUSTER="$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${__K8S_CTX}\")].context.cluster}")"
+    echo -e "__K8S_CTX=$__K8S_CTX\n__K8S_CLUSTER=$__K8S_CLUSTER\n__K8S_NS=${__K8S_NS:-default}\n" > "$CACHEFILE"
 }
 
 __k8s_ps1 () {
@@ -55,7 +56,7 @@ __k8s_ps1 () {
     fi
     [[ -e ~/.bash_completion.d/k8s-ps1.conf.sh ]] && . ~/.bash_completion.d/k8s-ps1.conf.sh
     COL="39"
-    case "$__K8S_CTX" in
+    case "$__K8S_CLUSTER" in
 	$K8S_COL_PATTERN_WHITE)
 	    COL="39"
 	    ;;
@@ -72,7 +73,7 @@ __k8s_ps1 () {
             COL="30"
             ;;
     esac
-    printf -- "\n\001\e[1;44;39m\002(⎈\001\e[${COL}m\002 %s : %s \001\e[1;44;39m\002⎈)\001\e[0;36m\002\n\001\002" "$__K8S_CTX" "$__K8S_NS"
+    printf -- "\n\001\e[1;44;39m\002(⎈\001\e[${COL}m\002 %s : %s \001\e[1;44;39m\002⎈)\001\e[0;36m\002\n\001\002" "$__K8S_CLUSTER" "$__K8S_NS"
 }
 
 k8sen () {
