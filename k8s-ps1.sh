@@ -39,7 +39,7 @@ __k8s_parse () {
     echo -e "__K8S_CTX=$__K8S_CTX\n__K8S_CLUSTER=$__K8S_CLUSTER\n__K8S_NS=${__K8S_NS:-default}\n" > "$CACHEFILE"
 }
 
-__k8s_ps1 () {
+__k8s_fn () {
     [[ "${K8S_PS1_ENABLED}" == "on" ]] || return
     __k8s_parse
     source ~/.kube/config.env
@@ -57,9 +57,9 @@ __k8s_ps1 () {
     [[ -e ~/.bash_completion.d/k8s-ps1.conf.sh ]] && . ~/.bash_completion.d/k8s-ps1.conf.sh
     COL="39"
     case "$__K8S_CLUSTER" in
-	$K8S_COL_PATTERN_WHITE)
-	    COL="39"
-	    ;;
+    $K8S_COL_PATTERN_WHITE)
+        COL="39"
+        ;;
         $K8S_COL_PATTERN_RED)
             COL="31"
             ;;
@@ -76,18 +76,20 @@ __k8s_ps1 () {
     printf -- "\n\001\e[1;44;39m\002(⎈\001\e[${COL}m\002 %s : %s \001\e[1;44;39m\002⎈)\001\e[0;36m\002\n\001\002" "$__K8S_CLUSTER" "$__K8S_NS"
 }
 
+__k8s_ps1="\$(__k8s_fn)"
+
 k8sen () {
-  echo "Enable K8S shell annotation"
-  export K8S_PS1_ENABLED=on
+    echo "Enable K8S shell annotation"
+    export K8S_PS1_ENABLED=on
 }
 
 k8sdis () {
-  echo "Disable K8S shell annotation"
-  export K8S_PS1_ENABLED=
+    echo "Disable K8S shell annotation"
+    export K8S_PS1_ENABLED=
 }
 
 k8stoggle () {
-  [ -n "$K8S_PS1_ENABLED" ] && k8sdis || k8sen
+    [ -n "$K8S_PS1_ENABLED" ] && k8sdis || k8sen
 }
 
 bind -x '"\C-t": k8stoggle'
